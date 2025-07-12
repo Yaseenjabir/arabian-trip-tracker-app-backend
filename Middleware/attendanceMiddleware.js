@@ -15,7 +15,8 @@ const storage = new CloudinaryStorage({
   params: {
     folder: "attendance_signatures",
     allowed_formats: ["png", "jpg", "jpeg"],
-    public_id: (req, file) => `signature_${Date.now()}_${req.body.staffName}`,
+    public_id: (req, file) =>
+      `signature_${Date.now()}_${req.body.staffName?.trim() || "unknown"}`,
   },
 });
 
@@ -40,15 +41,16 @@ const upload = multer({
 // Middleware to validate file presence before upload
 const validateSignature = (req, res, next) => {
   try {
-    // Check if the signature field exists in the FormData
-    // console.log(req.file);
-    // console.log(req.body);
+    if (req.body.staffName) {
+      req.body.staffName = req.body.staffName.trim();
+    }
 
     if (!req.body.signature && !req.file) {
       return res.status(400).json({
         error: "No signature file provided in the request",
       });
     }
+
     next();
   } catch (error) {
     console.error("Validation error:", error);
